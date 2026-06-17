@@ -1,0 +1,98 @@
+﻿[
+  {
+    "id": "linear",
+    "name": "Линейные уравнения",
+    "class": 7,
+    "icon": "📐",
+    "description": "Уравнения вида ax + b = 0",
+    "difficulty": "Базовый"
+  },
+  {
+    "id": "incomplete-quadratic",
+    "name": "Неполные квадратные уравнения",
+    "class": 8,
+    "icon": "🔲",
+    "description": "Квадратные уравнения без одного из коэффициентов",
+    "difficulty": "Базовый"
+  },
+  {
+    "id": "quadratic",
+    "name": "Квадратные уравнения",
+    "class": 8,
+    "icon": "📈",
+    "description": "Уравнения вида ax² + bx + c = 0",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "rational",
+    "name": "Дробно-рациональные уравнения",
+    "class": 8,
+    "icon": "➗",
+    "description": "Уравнения с дробями, содержащими переменную в знаменателе",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "absolute-value",
+    "name": "Уравнения с модулем",
+    "class": 8,
+    "icon": "🔲",
+    "description": "Уравнения вида |f(x)| = a, |f(x)| = |g(x)|",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "linear-system",
+    "name": "Системы линейных уравнений",
+    "class": 7,
+    "icon": "🔗",
+    "description": "Два и более линейных уравнения с несколькими переменными",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "factorization",
+    "name": "Разложение на множители",
+    "class": 7,
+    "icon": "✂️",
+    "description": "Уравнения вида f(x) = 0, решаемые разложением на множители",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "biquadratic",
+    "name": "Биквадратные уравнения",
+    "class": 9,
+    "icon": "🔄",
+    "description": "Уравнения вида ax⁴ + bx² + c = 0",
+    "difficulty": "Средний"
+  },
+  {
+    "id": "irrational",
+    "name": "Иррациональные уравнения",
+    "class": 9,
+    "icon": "√",
+    "description": "Уравнения с переменной под знаком корня",
+    "difficulty": "Сложный"
+  },
+  {
+    "id": "nonlinear-system",
+    "name": "Системы нелинейных уравнений",
+    "class": 9,
+    "icon": "🔀",
+    "description": "Системы, содержащие нелинейные уравнения",
+    "difficulty": "Сложный"
+  },
+  {
+    "id": "parameter",
+    "name": "Уравнения с параметром",
+    "class": 9,
+    "icon": "⚙️",
+    "description": "Уравнения, в которых коэффициенты зависят от параметра",
+    "difficulty": "Сложный"
+  },
+  {
+    "id": "word-problems",
+    "name": "Текстовые задачи",
+    "class": 7,
+    "icon": "📝",
+    "description": "Задачи, решаемые составлением уравнений",
+    "difficulty": "Средний"
+  }
+]
