@@ -47,6 +47,7 @@ body.loading .app-content { display: none; }
   align-items: center;
   height: 60px;
   gap: 8px;
+  padding-left: 32px;
 }
 
 .navbar-brand {
@@ -73,7 +74,7 @@ body.loading .app-content { display: none; }
 .app-content {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 32px 24px 32px 32px;
 }
 
 .page h1 {
@@ -113,6 +114,8 @@ body.loading .app-content { display: none; }
   transition: all 0.2s;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
 }
 
 .eq-card:hover {
@@ -123,14 +126,16 @@ body.loading .app-content { display: none; }
 
 .eq-icon { font-size: 2em; margin-bottom: 8px; }
 .eq-name { font-weight: 600; font-size: 1.05em; margin-bottom: 4px; }
-.eq-desc { font-size: 0.85em; color: var(--text-muted); margin-bottom: 12px; }
+.eq-desc { font-size: 0.85em; color: var(--text-muted); margin-bottom: 12px; flex-grow: 1; }
 
 .eq-difficulty {
-  display: inline-block;
+  display: block;
   padding: 2px 10px;
   border-radius: 20px;
   font-size: 0.75em;
   font-weight: 600;
+  text-align: center;
+  align-self: center;
 }
 
 .eq-difficulty.Базовый { background: #dfe6e9; color: #636e72; }
@@ -478,14 +483,156 @@ body.loading .app-content { display: none; }
   transition: width 0.5s;
 }
 
+/* Персонаж-помощник */
+.practice-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.practice-wrapper .practice-container {
+  flex: 1;
+  max-width: 700px;
+}
+
+.mascot {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mascot-visible {
+  display: flex;
+}
+
+.mascot-character {
+  font-size: 3em;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  animation: mascot-bounce 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.mascot-speech {
+  background: var(--card-bg);
+  border: 2px solid var(--primary-light);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--text);
+  position: relative;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.4s ease;
+  box-shadow: var(--shadow);
+}
+
+.mascot-speech.mascot-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mascot-speech::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -8px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid var(--card-bg);
+}
+
+.mascot-speech.success {
+  border-color: var(--success);
+}
+
+.mascot-speech.success::after {
+  border-top-color: var(--card-bg);
+}
+
+.mascot-speech.error {
+  border-color: var(--error);
+}
+
+.mascot-speech.error::after {
+  border-top-color: var(--card-bg);
+}
+
+.mascot-speech.info {
+  border-color: var(--info);
+}
+
+.mascot-speech.info::after {
+  border-top-color: var(--card-bg);
+}
+
+@media (max-width: 900px) {
+  .practice-wrapper {
+    flex-direction: column;
+  }
+
+  .mascot {
+    width: 100%;
+    position: static;
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mascot-speech {
+    margin-bottom: 0;
+    order: 1;
+    flex: 1;
+  }
+
+  .mascot-speech::after {
+    bottom: auto;
+    top: 50%;
+    left: -10px;
+    margin-left: 0;
+    margin-top: -8px;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid var(--card-bg);
+    border-left: none;
+  }
+
+  .mascot-character {
+    order: 0;
+  }
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .eq-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .stats-summary { grid-template-columns: 1fr; }
   .practice-buttons { flex-direction: column; }
   .navbar { padding: 0 12px; }
+  .navbar-inner { padding-left: 16px; }
   .nav-link { padding: 6px 10px; font-size: 0.8em; }
-  .app-content { padding: 16px 12px; }
+  .app-content { padding: 16px 12px 16px 16px; }
   .theory-actions { flex-direction: column; }
   .theory-actions .btn { justify-content: center; }
 }

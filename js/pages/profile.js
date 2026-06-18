@@ -42,6 +42,7 @@ async function renderProfilePage(app, params, hash) {
     } else {
       const totalAttempts = progress.reduce((s, p) => s + p.attempts, 0);
       const totalCorrect = progress.reduce((s, p) => s + p.correct, 0);
+      const totalFirstAttempt = progress.reduce((s, p) => s + (p.solvedOnFirstAttempt || 0), 0);
       const percent = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
 
       html += `
@@ -52,11 +53,21 @@ async function renderProfilePage(app, params, hash) {
           </div>
           <div class="stat-card">
             <div class="stat-value">${totalCorrect}</div>
-            <div class="stat-label">Правильных</div>
+            <div class="stat-label">Решено задач</div>
           </div>
           <div class="stat-card">
             <div class="stat-value">${percent}%</div>
             <div class="stat-label">Успешность</div>
+          </div>
+        </div>
+        <div class="stats-summary" style="grid-template-columns: 1fr 1fr; margin-top: -16px;">
+          <div class="stat-card">
+            <div class="stat-value">${totalFirstAttempt}</div>
+            <div class="stat-label">С первой попытки</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalCorrect - totalFirstAttempt}</div>
+            <div class="stat-label">Со второй попытки</div>
           </div>
         </div>
         <h3>Прогресс по типам уравнений</h3>

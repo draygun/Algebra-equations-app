@@ -1,6 +1,6 @@
 ﻿// services/storage.js — работа с Firestore (сохранение прогресса)
 
-async function saveProgress(eqTypeId, correct) {
+async function saveProgress(eqTypeId, correct, firstAttempt) {
   if (!firestore || !window.currentUser) return;
 
   try {
@@ -12,6 +12,7 @@ async function saveProgress(eqTypeId, correct) {
       eqTypeId,
       attempts: 1,
       correct: correct ? 1 : 0,
+      solvedOnFirstAttempt: firstAttempt ? 1 : 0,
       lastAttempt: new Date().toISOString(),
     };
 
@@ -20,6 +21,7 @@ async function saveProgress(eqTypeId, correct) {
       await ref.update({
         attempts: existing.attempts + 1,
         correct: existing.correct + (correct ? 1 : 0),
+        solvedOnFirstAttempt: existing.solvedOnFirstAttempt + (firstAttempt ? 1 : 0),
         lastAttempt: new Date().toISOString(),
       });
     } else {
