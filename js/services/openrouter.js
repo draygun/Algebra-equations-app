@@ -6,7 +6,6 @@ const FALLBACK_MODELS = [
   'nex-agi/nex-n2-pro:free',
   'openrouter/owl-alpha',
   'poolside/laguna-m.1:free',
-  'qwen/qwen3-next-80b-a3b-instruct:free',
 ];
 
 async function callOpenRouter(messages) {
@@ -15,7 +14,7 @@ async function callOpenRouter(messages) {
   }
 
   const models = [
-    APP_CONFIG.openrouter.model || 'nex-agi/nex-n2-pro:free',
+    APP_CONFIG.openrouter.model || 'qwen/qwen3-next-80b-a3b-instruct:free',
     ...FALLBACK_MODELS,
   ];
 

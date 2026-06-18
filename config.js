@@ -1,7 +1,7 @@
 const APP_CONFIG = {
   openrouter: {
     apiKey: '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',
-    model: 'google/gemma-4-31b-it:free',
+    model: 'qwen/qwen3-next-80b-a3b-instruct:free',
   },
   firebase: {
     apiKey: 'AIzaSyDSthQ5-CTyp1fFr1_QVlbYZ8YJnTpSf0k',
