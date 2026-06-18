@@ -53,6 +53,8 @@ let currentPractice = {
   eqTypeId: '',
   solved: false,
   retryCount: 0,
+  steps: [],
+  difficulty: 2,
 };
 
 function renderPracticePage(app, params, hash) {
@@ -61,6 +63,8 @@ function renderPracticePage(app, params, hash) {
   currentPractice.hintRevealed = false;
   currentPractice.solved = false;
   currentPractice.retryCount = 0;
+  currentPractice.steps = [];
+  currentPractice.difficulty = parseInt(params.difficulty, 10) || 2;
 
   try {
     const equations = EQUATIONS_DATA;
@@ -75,6 +79,12 @@ function renderPracticePage(app, params, hash) {
               ← К теории
             </button>
           </div>
+          <div class="difficulty-selector">
+            <span class="difficulty-label">Уровень сложности:</span>
+            <button class="difficulty-btn" data-diff="1" onclick="selectDifficulty(1)">Базовый</button>
+            <button class="difficulty-btn" data-diff="2" onclick="selectDifficulty(2)">Средний</button>
+            <button class="difficulty-btn" data-diff="3" onclick="selectDifficulty(3)">Сложный</button>
+          </div>
           <div id="practice-content">
             <div class="loading">Генерация уравнения...</div>
           </div>
@@ -83,10 +93,25 @@ function renderPracticePage(app, params, hash) {
       </div>
     `;
 
+    updateDifficultyButtons();
     generateNewEquation(true);
   } catch (err) {
     app.innerHTML = `<div class="error-msg">Ошибка: ${err.message}</div>`;
   }
+}
+
+function updateDifficultyButtons() {
+  document.querySelectorAll('.difficulty-btn').forEach(btn => {
+    const diff = parseInt(btn.dataset.diff, 10);
+    btn.classList.toggle('difficulty-btn-active', diff === currentPractice.difficulty);
+  });
+}
+
+function selectDifficulty(diff) {
+  currentPractice.difficulty = diff;
+  updateDifficultyButtons();
+  const id = currentPractice.eqTypeId;
+  router.navigate(`/practice/${id}/${diff}`);
 }
 
 function showMascot(phrase, type) {
@@ -119,14 +144,18 @@ async function generateNewEquation(skipMascot) {
   currentPractice.solved = false;
   currentPractice.retryCount = 0;
   currentPractice.hintRevealed = false;
+  currentPractice.steps = [];
   hideMascot();
 
   content.innerHTML = '<div class="loading">Генерация уравнения...</div>';
 
   try {
-    const data = await generateEquation(currentPractice.eqType);
+    const data = await generateEquation(currentPractice.eqType, currentPractice.difficulty);
     currentPractice.equation = data.equation;
     currentPractice.correctAnswer = data.answer;
+    currentPractice.steps = data.steps || [];
+
+    const diffLabels = ['', 'Базовый', 'Средний', 'Сложный'];
 
     content.innerHTML = `
       <div class="practice-equation">
@@ -147,6 +176,7 @@ async function generateNewEquation(skipMascot) {
 
       <div id="practice-result"></div>
       <div id="practice-hint"></div>
+      <div id="practice-steps"></div>
     `;
 
     const input = document.getElementById('answer-input');
@@ -162,6 +192,16 @@ async function generateNewEquation(skipMascot) {
       <button onclick="generateNewEquation()" class="btn btn-primary" style="margin-top:12px">Попробовать снова</button>
     `;
   }
+}
+
+function renderSteps(steps) {
+  if (!steps || !steps.length) return '';
+  return `
+    <div class="steps-list">
+      <strong>Пошаговое решение:</strong>
+      ${steps.map((step, i) => `<div class="step-item">${i + 1}. ${sanitizeHint(step)}</div>`).join('')}
+    </div>
+  `;
 }
 
 async function submitAnswer() {
@@ -182,7 +222,7 @@ async function submitAnswer() {
   resultDiv.innerHTML = '<div class="loading">Проверка...</div>';
 
   try {
-    const data = await checkAnswer(currentPractice.equation, userAnswer, currentPractice.correctAnswer);
+    const data = await checkAnswer(currentPractice.equation, userAnswer, currentPractice.correctAnswer, currentPractice.steps);
 
     const isCorrect = data.correct;
 
@@ -193,28 +233,45 @@ async function submitAnswer() {
         ? getRandomPhrase('correct')
         : getRandomPhrase('correctAfterRetry');
 
-      resultDiv.innerHTML = `
+      let html = `
         <div class="msg msg-success">
           <strong>${isFirstAttempt ? 'Верно!' : 'Верно! Со второй попытки!'}</strong>
           <p>${data.explanation || ''}</p>
         </div>
       `;
+
+      if (data.steps) {
+        html += renderSteps(data.steps);
+      }
+
+      resultDiv.innerHTML = html;
       showMascot(phrase, 'success');
       await saveProgress(currentPractice.eqTypeId, true, isFirstAttempt);
     } else {
       currentPractice.retryCount++;
 
-      const shouldShowAnswer = currentPractice.retryCount >= 2;
+      const showFirstStep = currentPractice.retryCount >= 1 && currentPractice.steps.length > 0;
 
-      resultDiv.innerHTML = `
+      let html = `
         <div class="msg msg-error">
           <strong>Неверно</strong>
           <p>${data.explanation || ''}</p>
-          ${shouldShowAnswer ? `<p class="correct-answer">Правильный ответ: ${currentPractice.correctAnswer}</p>` : ''}
-          ${!shouldShowAnswer ? '<p class="text-muted" style="margin-top:8px">Попробуйте ещё раз</p>' : ''}
+          ${currentPractice.retryCount >= 2 ? `<p class="correct-answer">Правильный ответ: ${currentPractice.correctAnswer}</p>` : ''}
+          ${currentPractice.retryCount < 2 ? '<p class="text-muted" style="margin-top:8px">Попробуй ещё раз</p>' : ''}
         </div>
       `;
 
+      if (showFirstStep) {
+        html += `
+          <div class="msg msg-hint">
+            <strong>Подсказка — первый шаг:</strong>
+            <p>${sanitizeHint(currentPractice.steps[0])}</p>
+          </div>
+        `;
+        currentPractice.hintRevealed = true;
+      }
+
+      resultDiv.innerHTML = html;
       showMascot(getRandomPhrase('wrong'), 'error');
     }
   } catch (err) {
@@ -225,7 +282,7 @@ async function submitAnswer() {
 
 async function getHintAction() {
   const hintDiv = document.getElementById('practice-hint');
-  const equation = currentPractice.equation;
+  const stepsDiv = document.getElementById('practice-steps');
 
   if (currentPractice.solved) {
     showMascot('Уравнение уже решено! Сгенерируй новое.', 'info');
@@ -241,12 +298,12 @@ async function getHintAction() {
   hintDiv.innerHTML = '<div class="loading">Генерация подсказки...</div>';
 
   try {
-    const hint = await getHint(equation);
+    const hint = await getHint(currentPractice.steps);
     currentPractice.hintRevealed = true;
     const cleanHint = sanitizeHint(hint);
     hintDiv.innerHTML = `
       <div class="msg msg-info">
-        <strong>Подсказка</strong>
+        <strong>Подсказка — первый шаг</strong>
         <p>${cleanHint}</p>
       </div>
     `;

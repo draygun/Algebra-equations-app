@@ -2,12 +2,12 @@
 
 class Router {
   constructor() {
-    this.routes = {};
+    this.routes = [];
     window.addEventListener('hashchange', () => this.resolve());
   }
 
-  add(path, handler) {
-    this.routes[path] = handler;
+  add(pattern, handler) {
+    this.routes.push({ pattern, handler });
   }
 
   navigate(path) {
@@ -19,19 +19,23 @@ class Router {
     const app = document.getElementById('app');
     app.innerHTML = '';
 
-    const keys = Object.keys(this.routes);
-    for (const pattern of keys) {
-      const regex = new RegExp('^' + pattern.replace(/:id/g, '([^/]+)') + '$');
+    for (const { pattern, handler } of this.routes) {
+      const paramNames = [];
+      const regexStr = pattern.replace(/:(\w+)/g, (_, name) => {
+        paramNames.push(name);
+        return '([^/]+)';
+      });
+      const regex = new RegExp('^' + regexStr + '$');
       const match = hash.match(regex);
       if (match) {
-        const params = { id: match[1] };
-        this.routes[pattern](app, params, hash);
+        const params = {};
+        paramNames.forEach((name, i) => { params[name] = match[i + 1]; });
+        handler(app, params, hash);
         this.updateNav(hash);
         return;
       }
     }
 
-    // 404
     app.innerHTML = '<h2>Страница не найдена</h2>';
   }
 

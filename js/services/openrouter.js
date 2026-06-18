@@ -75,47 +75,51 @@ function extractJSON(text) {
   return null;
 }
 
-const VARIATIONS = [
-  'Сделай уравнение с дробными коэффициентами.',
-  'Сделай уравнение, где ответ — отрицательное число.',
-  'Сделай уравнение с корнями в ответе.',
-  'Сделай уравнение с десятичными дробями.',
-  'Сделай уравнение, которое решается в 2-3 шага.',
-  'Сделай уравнение с большими числами.',
-  'Сделай нестандартное уравнение, но решаемое.',
-  'Сделай лёгкое уравнение для разминки.',
-  'Сделай уравнение, которое проверяет понимание метода, а не вычисления.',
-  'Сделай уравнение, где нужно привести подобные слагаемые.',
-];
-
-async function generateEquation(eqType) {
-  const variation = VARIATIONS[Math.floor(Math.random() * VARIATIONS.length)];
-  const seed = Math.floor(Math.random() * 10000);
+async function generateEquation(eqType, difficulty) {
+  // Get examples for this eq type and difficulty
+  const examples = EQUATION_EXAMPLES[eqType.id];
+  if (!examples || !examples[difficulty]) {
+    throw new Error(`Нет примеров для типа "${eqType.id}" уровня ${difficulty}`);
+  }
+  const levelExamples = examples[difficulty];
+  const template = levelExamples[Math.floor(Math.random() * levelExamples.length)];
 
   const prompt = [
     {
       role: 'system',
-      content: `Ты — преподаватель алгебры для 7-9 классов. Каждый раз генерируй РАЗНЫЕ уравнения, не повторяйся. Сгенерируй одно уравнение типа "${eqType.name}" для практики. Уравнение должно соответствовать ${eqType.class} классу и быть решаемым. ${variation} Обращайся к ученику на "ты".
+      content: `Ты — преподаватель алгебры для 7-9 классов. Сгенерируй ОДНО уравнение типа "${eqType.name}" (${eqType.class} класс) для практики. Уравнение должно быть решаемым.
+
+Вот пример уравнения этого типа и уровня сложности (уровень ${difficulty}):
+Уравнение: ${template.equation}
+Ответ: ${template.answer}
+Шаги решения:
+${template.steps.map((s, i) => `${i+1}. ${s}`).join('\n')}
+
+Сгенерируй ПОХОЖЕЕ уравнение — ДРУГИЕ ЧИСЛА, но та же структура. Обращайся к ученику на "ты".
 
 Верни ответ строго в формате JSON БЕЗ лишнего текста:
 {
   "equation": "уравнение",
   "answer": "правильный ответ",
-  "difficulty": "легко/средне/сложно"
+  "steps": ["шаг 1", "шаг 2", ...],
+  "difficulty": ${difficulty}
 }`
     },
-    { role: 'user', content: `Сгенерируй уравнение типа "${eqType.name}". Вариация #${seed}.` }
+    {
+      role: 'user',
+      content: `Сгенерируй уравнение типа "${eqType.name}", уровень сложности ${difficulty}. Используй пример как шаблон, но с другими числами.`
+    }
   ];
 
   const result = await callOpenRouter(prompt);
   const parsed = extractJSON(result);
-  if (!parsed || !parsed.equation) {
+  if (!parsed || !parsed.equation || !parsed.answer || !parsed.steps) {
     throw new Error('AI вернул некорректный ответ. Попробуйте снова.');
   }
   return parsed;
 }
 
-async function checkAnswer(equation, userAnswer, correctAnswer) {
+async function checkAnswer(equation, userAnswer, correctAnswer, steps) {
   const prompt = [
     {
       role: 'system',
@@ -132,16 +136,15 @@ async function checkAnswer(equation, userAnswer, correctAnswer) {
   if (!parsed || parsed.correct === undefined) {
     return { correct: false, explanation: 'Не удалось проверить ответ. Попробуйте снова.' };
   }
+  if (parsed.correct && steps && steps.length) {
+    parsed.steps = steps;
+  }
   return parsed;
 }
 
-async function getHint(equation) {
-  const prompt = [
-    {
-      role: 'system',
-      content: 'Ты — преподаватель алгебры. Дай короткую подсказку к решению уравнения (1-3 предложения). Укажи только метод решения или первый шаг. КАТЕГОРИЧЕСКИ НЕЛЬЗЯ давать полное решение, пошаговое решение или правильный ответ. Если дашь полное решение — пользователь расстроится, он хочет дойти сам. Обращайся к ученику на "ты". Ответь на русском.'
-    },
-    { role: 'user', content: `Какой метод решения у уравнения ${equation}? Дай только подсказку, не решай его.` }
-  ];
-  return callOpenRouter(prompt);
+async function getHint(steps) {
+  if (steps && steps.length > 0) {
+    return steps[0];
+  }
+  throw new Error('Шаги решения недоступны.');
 }

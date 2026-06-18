@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   router.add('/auth', renderAuthPage);
   router.add('/theory/:id', renderTheoryPage);
   router.add('/practice/:id', renderPracticePage);
+  router.add('/practice/:id/:difficulty', renderPracticePage);
   router.add('/profile', renderProfilePage);
 
   // Показываем навигацию и разрешаем текущий URL
