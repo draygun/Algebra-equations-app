@@ -51,12 +51,7 @@ function renderHomePage(app, params, hash) {
       <div class="home-mascot">
         <div class="mascot-speech info">${HOME_MASCOT_PHRASES[Math.floor(Math.random() * HOME_MASCOT_PHRASES.length)]}</div>
         <div class="mascot-character">
-          <span class="paperclip-body">📎</span>
-          <span class="mascot-face">
-            <span class="eye left"></span>
-            <span class="eye right"></span>
-            <span class="smile"></span>
-          </span>
+          <img class="mascot-svg" src="data/character.svg" alt="Помощник">
         </div>
       </div>
     `;

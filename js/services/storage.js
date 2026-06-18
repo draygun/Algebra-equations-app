@@ -19,9 +19,9 @@ async function saveProgress(eqTypeId, correct, firstAttempt) {
     if (doc.exists) {
       const existing = doc.data();
       await ref.update({
-        attempts: existing.attempts + 1,
-        correct: existing.correct + (correct ? 1 : 0),
-        solvedOnFirstAttempt: existing.solvedOnFirstAttempt + (firstAttempt ? 1 : 0),
+        attempts: (existing.attempts || 0) + 1,
+        correct: (existing.correct || 0) + (correct ? 1 : 0),
+        solvedOnFirstAttempt: (existing.solvedOnFirstAttempt || 0) + (firstAttempt ? 1 : 0),
         lastAttempt: new Date().toISOString(),
       });
     } else {

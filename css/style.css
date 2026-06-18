@@ -41,7 +41,8 @@ body.loading .app-content { display: none; }
 
 .navbar-inner {
   max-width: 1100px;
-  margin: 0 auto;
+  margin-left: 15%;
+  margin-right: auto;
   display: flex;
   align-items: center;
   height: 60px;
@@ -72,7 +73,8 @@ body.loading .app-content { display: none; }
 /* Основной контент */
 .app-content {
   max-width: 1100px;
-  margin: 0 auto;
+  margin-left: 15%;
+  margin-right: auto;
   padding: 32px 48px;
 }
 
@@ -520,52 +522,12 @@ body.loading .app-content { display: none; }
   box-shadow: var(--shadow);
   animation: mascot-bounce 3s ease-in-out infinite;
   flex-shrink: 0;
-  position: relative;
 }
 
-.mascot-character .paperclip-body {
-  font-size: 1.8em;
-  position: relative;
-  line-height: 1;
-}
-
-.mascot-face {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.mascot-face .eye {
-  position: absolute;
-  width: 5px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  top: 18px;
-}
-
-.mascot-face .eye.left { left: 17px; }
-.mascot-face .eye.right { right: 17px; }
-
-.mascot-face .smile {
-  position: absolute;
-  width: 10px;
-  height: 5px;
-  border: 2px solid white;
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-  bottom: 15px;
-  left: 50%;
-  margin-left: -5px;
-  background: transparent;
-}
-
-.mascot-character .paperclip-body,
-.mascot-face {
-  transition: none;
+.mascot-svg {
+  width: 48px;
+  height: 48px;
+  display: block;
 }
 
 @keyframes mascot-bounce {

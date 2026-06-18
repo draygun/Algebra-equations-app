@@ -51,6 +51,22 @@ function renderTheoryPage(app, params, hash) {
       </button>
     </div>`;
 
+    const mascotPhrases = [
+      'Изучи теорию, а потом пробуй решать на практике! 📚',
+      'Понимание теории — ключ к успеху! 🔑',
+      'Разобрался? Теперь попробуй решить уравнение! 💪',
+      'Запомни алгоритм — он пригодится на практике! ⭐',
+    ];
+
+    html += `
+      <div class="home-mascot">
+        <div class="mascot-speech info">${mascotPhrases[Math.floor(Math.random() * mascotPhrases.length)]}</div>
+        <div class="mascot-character">
+          <img class="mascot-svg" src="data/character.svg" alt="Помощник">
+        </div>
+      </div>
+    `;
+
     app.innerHTML = html;
   } catch (err) {
     app.innerHTML = `<div class="error-msg">Ошибка загрузки теории: ${err.message}</div>`;
