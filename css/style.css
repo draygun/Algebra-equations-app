@@ -512,8 +512,8 @@ body.loading .app-content { display: none; }
 }
 
 .mascot-character {
-  width: 64px;
-  height: 64px;
+  width: 160px;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -525,8 +525,8 @@ body.loading .app-content { display: none; }
 }
 
 .mascot-img {
-  width: 48px;
-  height: 48px;
+  width: 120px;
+  height: 120px;
   display: block;
   border-radius: 50%;
   object-fit: cover;
@@ -683,6 +683,14 @@ body.loading .app-content { display: none; }
 
 /* Адаптивность */
 @media (max-width: 768px) {
+  .mascot-character {
+    width: 100px;
+    height: 100px;
+  }
+  .mascot-img {
+    width: 72px;
+    height: 72px;
+  }
   .eq-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .stats-summary { grid-template-columns: 1fr; }
   .practice-buttons { flex-direction: column; }
