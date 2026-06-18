@@ -48,6 +48,11 @@ async function callOpenRouter(messages, retries = 3) {
             continue;
           }
 
+          // 400 invalid model — пробуем следующую модель
+          if (response.status === 400 && modelIdx < models.length - 1) {
+            break;
+          }
+
           throw new Error(`Ошибка OpenRouter (${response.status}): ${err}`);
         }
 
@@ -57,13 +62,14 @@ async function callOpenRouter(messages, retries = 3) {
         }
         return data.choices[0].message.content;
       } catch (err) {
-        if (attempt < retries && err.message.includes('429')) {
+        const isRetryable = err.message.includes('429') || err.message.includes('400');
+        if (attempt < retries && isRetryable) {
           const delay = delays[Math.min(attempt, delays.length - 1)];
           await new Promise(r => setTimeout(r, delay));
           continue;
         }
-        // Если 429 и это была последняя попытка для этой модели — пробуем следующую
-        if (err.message.includes('429') && modelIdx < models.length - 1) {
+        // Если ошибка модели и есть ещё запасные — пробуем следующую
+        if (isRetryable && modelIdx < models.length - 1) {
           break;
         }
         throw err;
