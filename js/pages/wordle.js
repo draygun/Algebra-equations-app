@@ -26,6 +26,11 @@ const WORDLE_MASCOT_PHRASES = {
     'Попробуй угадать математический термин! 📝',
     'Вводи буквы с клавиатуры! 🎮',
   ],
+  hint: [
+    'Вот подсказка! Одна буква открыта 🔍',
+    'Используй эту букву с умом! 🤓',
+    'Хорошая буква — хороший ход! 📌',
+  ],
 };
 
 const WORDLE_KEYBOARD_ROWS = [
@@ -47,6 +52,8 @@ let wordleState = {
   isDaily: false,
   dailySeed: '',
   keyboardColors: {},
+  revealedPositions: [],
+  hintsRemaining: 3,
 };
 
 function renderWordlePage(app, params, hash) {
@@ -55,14 +62,18 @@ function renderWordlePage(app, params, hash) {
   const isDaily = hash.includes('/daily');
   wordleState.isDaily = isDaily;
 
-  app.innerHTML = `
+    app.innerHTML = `
     <div class="wordle-wrapper">
       <div class="wordle-container">
         <div class="wordle-header">
           <h1>${isDaily ? 'Ежедневное слово' : 'Wordle'}</h1>
           <p class="wordle-subtitle">Угадай математический термин</p>
         </div>
+        <div id="wordle-hints"></div>
         <div id="wordle-board"></div>
+        <div class="wordle-hint-btn-container">
+          <button id="wordle-hint-btn" class="wordle-hint-btn" onclick="handleWordleHint()">💡 Подсказка (3)</button>
+        </div>
         <div id="wordle-keyboard"></div>
         <div id="wordle-message"></div>
         <div id="wordle-next"></div>
@@ -111,6 +122,8 @@ function startWordleGame(isDaily) {
   wordleState.gameOver = false;
   wordleState.won = false;
   wordleState.keyboardColors = {};
+  wordleState.revealedPositions = [];
+  wordleState.hintsRemaining = 3;
 
   pickWordleWord(isDaily);
 
@@ -122,7 +135,9 @@ function startWordleGame(isDaily) {
   if (next) next.innerHTML = '';
 
   renderWordleGrid(board);
+  renderWordleHints();
   renderWordleKeyboard(keyboard);
+  updateWordleHintButton();
   showWordleMascot(getWordlePhrase('empty'), 'info');
 
   document.removeEventListener('keydown', handleWordlePhysicalKey);
@@ -150,7 +165,7 @@ function renderWordleKeyboard(container) {
     }
     row.forEach(ch => {
       const color = wordleState.keyboardColors[ch] || '';
-      html += `<button class="wordle-key ${color}" data-key="${ch}" onclick="handleWordleKey('${ch}')">${ch}</button>`;
+      html += `<button class="wordle-key ${color}" onclick="handleWordleKey('${ch}')">${ch}</button>`;
     });
     if (ri === 2) {
       html += `<button class="wordle-key wordle-key-wide" onclick="handleWordleKey('DEL')">Del</button>`;
@@ -306,6 +321,74 @@ function submitWordleGuess() {
   }
 }
 
+function updateWordleHintButton() {
+  const btn = document.getElementById('wordle-hint-btn');
+  if (!btn) return;
+  if (wordleState.gameOver || wordleState.hintsRemaining <= 0) {
+    btn.disabled = true;
+    btn.textContent = wordleState.hintsRemaining <= 0 ? '💡 Подсказок нет' : '💡 Подсказка (0)';
+    btn.classList.add('wordle-hint-btn-disabled');
+  } else {
+    btn.disabled = false;
+    btn.textContent = `💡 Подсказка (${wordleState.hintsRemaining})`;
+    btn.classList.remove('wordle-hint-btn-disabled');
+  }
+}
+
+function renderWordleHints() {
+  const container = document.getElementById('wordle-hints');
+  if (!container) return;
+  const len = wordleState.wordLength;
+  const target = wordleState.targetWord;
+  const revealed = wordleState.revealedPositions;
+
+  if (revealed.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'flex';
+  let html = '<div class="wordle-hints-label">Подсказка:</div><div class="wordle-hints-row">';
+  for (let i = 0; i < len; i++) {
+    if (revealed.includes(i)) {
+      html += `<div class="wordle-hint-tile wordle-hint-tile-revealed">${target[i]}</div>`;
+    } else {
+      html += `<div class="wordle-hint-tile wordle-hint-tile-hidden">?</div>`;
+    }
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function handleWordleHint() {
+  if (wordleState.gameOver || wordleState.hintsRemaining <= 0) return;
+
+  const len = wordleState.wordLength;
+  const available = [];
+  for (let i = 0; i < len; i++) {
+    if (!wordleState.revealedPositions.includes(i)) {
+      available.push(i);
+    }
+  }
+  if (available.length === 0) return;
+
+  const pos = available[Math.floor(Math.random() * available.length)];
+  wordleState.revealedPositions.push(pos);
+  wordleState.hintsRemaining--;
+
+  const ch = wordleState.targetWord[pos];
+  const current = wordleState.keyboardColors[ch];
+  if (current !== 'key-correct') {
+    wordleState.keyboardColors[ch] = 'key-correct';
+    updateWordleKeyboard();
+  }
+
+  renderWordleHints();
+  updateWordleHintButton();
+  showWordleMascot(getWordlePhrase('hint'), 'info');
+}
+
 function wordleWin() {
   const attempts = wordleState.guesses.length;
   const phrase = attempts === 1 ? getWordlePhrase('firstTry') : getWordlePhrase('win');
@@ -321,12 +404,14 @@ function wordleWin() {
     `;
   }
 
+  updateWordleHintButton();
   showWordleNextButton();
   saveWordleProgress(true, attempts);
 }
 
 function wordleLose() {
   showWordleMascot(getWordlePhrase('lose'), 'error');
+  updateWordleHintButton();
 
   const msg = document.getElementById('wordle-message');
   if (msg) {
