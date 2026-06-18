@@ -2,52 +2,74 @@
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-async function callOpenRouter(messages, retries = 2) {
+const FALLBACK_MODELS = [
+  'google/gemini-2.0-flash-lite-preview-02-05',
+  'mistralai/mistral-7b-instruct:free',
+];
+
+async function callOpenRouter(messages, retries = 3) {
   if (!APP_CONFIG || !APP_CONFIG.openrouter || !APP_CONFIG.openrouter.apiKey) {
     throw new Error('OpenRouter API ключ не настроен. Скопируйте config.example.js в config.js и укажите ключ.');
   }
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(OPENROUTER_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${APP_CONFIG.openrouter.apiKey}`,
-          'HTTP-Referer': window.location.origin,
-        },
-        body: JSON.stringify({
-          model: APP_CONFIG.openrouter.model || 'google/gemini-2.0-flash-lite-preview-02-05',
-          messages,
-        }),
-      });
+  const models = [
+    APP_CONFIG.openrouter.model || 'google/gemini-2.0-flash-lite-preview-02-05',
+    ...FALLBACK_MODELS,
+  ];
 
-      if (!response.ok) {
-        let err = 'Unknown error';
-        try { err = await response.text(); } catch(e) {}
+  const delays = [3000, 5000, 8000, 12000];
 
-        // 429 rate limit — автоматический повтор
-        if (response.status === 429 && attempt < retries) {
-          await new Promise(r => setTimeout(r, 3000));
-          continue;
+  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(OPENROUTER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${APP_CONFIG.openrouter.apiKey}`,
+            'HTTP-Referer': window.location.origin,
+          },
+          body: JSON.stringify({
+            model: models[modelIdx],
+            messages,
+          }),
+        });
+
+        if (!response.ok) {
+          let err = 'Unknown error';
+          try { err = await response.text(); } catch(e) {}
+
+          // 429 rate limit — повтор с увеличением задержки
+          if (response.status === 429 && attempt < retries) {
+            const delay = delays[Math.min(attempt, delays.length - 1)];
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+
+          throw new Error(`Ошибка OpenRouter (${response.status}): ${err}`);
         }
 
-        throw new Error(`Ошибка OpenRouter (${response.status}): ${err}`);
+        const data = await response.json();
+        if (!data.choices || !data.choices.length) {
+          throw new Error('OpenRouter вернул пустой ответ');
+        }
+        return data.choices[0].message.content;
+      } catch (err) {
+        if (attempt < retries && err.message.includes('429')) {
+          const delay = delays[Math.min(attempt, delays.length - 1)];
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        // Если 429 и это была последняя попытка для этой модели — пробуем следующую
+        if (err.message.includes('429') && modelIdx < models.length - 1) {
+          break;
+        }
+        throw err;
       }
-
-      const data = await response.json();
-      if (!data.choices || !data.choices.length) {
-        throw new Error('OpenRouter вернул пустой ответ');
-      }
-      return data.choices[0].message.content;
-    } catch (err) {
-      if (attempt < retries && err.message.includes('429')) {
-        await new Promise(r => setTimeout(r, 3000));
-        continue;
-      }
-      throw err;
     }
   }
+
+  throw new Error('Все модели OpenRouter временно недоступны. Попробуйте позже.');
 }
 
 function extractJSON(text) {
