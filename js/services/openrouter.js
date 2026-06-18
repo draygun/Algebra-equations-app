@@ -3,8 +3,10 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 const FALLBACK_MODELS = [
-  'google/gemini-2.0-flash-lite-preview-02-05',
-  'mistralai/mistral-7b-instruct:free',
+  'nex-agi/nex-n2-pro:free',
+  'openrouter/owl-alpha',
+  'poolside/laguna-m.1:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
 ];
 
 async function callOpenRouter(messages, retries = 3) {
@@ -13,7 +15,7 @@ async function callOpenRouter(messages, retries = 3) {
   }
 
   const models = [
-    APP_CONFIG.openrouter.model || 'google/gemini-2.0-flash-lite-preview-02-05',
+    APP_CONFIG.openrouter.model || 'nex-agi/nex-n2-pro:free',
     ...FALLBACK_MODELS,
   ];
 
