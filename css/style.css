@@ -1116,6 +1116,24 @@ body.loading .app-content { display: none; }
   border-color: var(--border);
 }
 
+.wordle-giveup-btn {
+  padding: 6px 18px;
+  border: 2px solid var(--error);
+  border-radius: 20px;
+  background: #fff5f5;
+  color: var(--error);
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 8px;
+}
+
+.wordle-giveup-btn:hover {
+  background: var(--error);
+  color: white;
+}
+
 #wordle-hints {
   display: flex;
   align-items: center;

@@ -31,6 +31,11 @@ const WORDLE_MASCOT_PHRASES = {
     'Используй эту букву с умом! 🤓',
     'Хорошая буква — хороший ход! 📌',
   ],
+  giveUp: [
+    'Не сдавайся! В следующий раз получится! 💪',
+    'Сдаёшься? Ладно, это было сложное слово! 🤗',
+    'Правильный ответ всё равно полезно узнать! 📖',
+  ],
 };
 
 const WORDLE_KEYBOARD_ROWS = [
@@ -73,6 +78,7 @@ function renderWordlePage(app, params, hash) {
         <div id="wordle-board"></div>
         <div class="wordle-hint-btn-container">
           <button id="wordle-hint-btn" class="wordle-hint-btn" onclick="handleWordleHint()">💡 Подсказка (3)</button>
+          <button id="wordle-giveup-btn" class="wordle-giveup-btn" onclick="handleWordleGiveUp()">Сдаюсь 😅</button>
         </div>
         <div id="wordle-keyboard"></div>
         <div id="wordle-message"></div>
@@ -138,6 +144,7 @@ function startWordleGame(isDaily) {
   renderWordleHints();
   renderWordleKeyboard(keyboard);
   updateWordleHintButton();
+  updateWordleGiveUpButton();
   showWordleMascot(getWordlePhrase('empty'), 'info');
 
   document.removeEventListener('keydown', handleWordlePhysicalKey);
@@ -333,6 +340,38 @@ function updateWordleHintButton() {
     btn.textContent = `💡 Подсказка (${wordleState.hintsRemaining})`;
     btn.classList.remove('wordle-hint-btn-disabled');
   }
+}
+
+function updateWordleGiveUpButton() {
+  const btn = document.getElementById('wordle-giveup-btn');
+  if (!btn) return;
+  if (wordleState.gameOver) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'inline-block';
+  }
+}
+
+function handleWordleGiveUp() {
+  if (wordleState.gameOver) return;
+  wordleState.gameOver = true;
+  wordleState.won = false;
+
+  const msg = document.getElementById('wordle-message');
+  if (msg) {
+    msg.innerHTML = `
+      <div class="msg msg-error">
+        <strong>Правильный ответ:</strong>
+        <p style="font-size:1.3em;font-weight:700;margin-top:4px">${wordleState.targetWord}</p>
+      </div>
+    `;
+  }
+
+  updateWordleHintButton();
+  updateWordleGiveUpButton();
+  showWordleMascot(getWordlePhrase('giveUp'), 'error');
+  showWordleNextButton();
+  saveWordleProgress(false, WORDLE_MAX_ATTEMPTS);
 }
 
 function renderWordleHints() {
