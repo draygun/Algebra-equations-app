@@ -9,7 +9,7 @@ const FALLBACK_MODELS = [
   'qwen/qwen3-next-80b-a3b-instruct:free',
 ];
 
-async function callOpenRouter(messages, retries = 3) {
+async function callOpenRouter(messages) {
   if (!APP_CONFIG || !APP_CONFIG.openrouter || !APP_CONFIG.openrouter.apiKey) {
     throw new Error('OpenRouter API ключ не настроен. Скопируйте config.example.js в config.js и укажите ключ.');
   }
@@ -19,60 +19,47 @@ async function callOpenRouter(messages, retries = 3) {
     ...FALLBACK_MODELS,
   ];
 
-  const delays = [3000, 5000, 8000, 12000];
+  async function tryModel(model) {
+    const response = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${APP_CONFIG.openrouter.apiKey}`,
+        'HTTP-Referer': window.location.origin,
+      },
+      body: JSON.stringify({ model, messages }),
+    });
+    if (!response.ok) {
+      let err = 'Unknown error';
+      try { err = await response.text(); } catch(e) {}
+      throw new Error(`Ошибка OpenRouter (${response.status}): ${err}`);
+    }
+    const data = await response.json();
+    if (!data.choices || !data.choices.length) {
+      throw new Error('OpenRouter вернул пустой ответ');
+    }
+    return data.choices[0].message.content;
+  }
 
-  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
+  // Фаза 1: пробуем каждую модель по одному разу без задержки
+  for (const model of models) {
+    try {
+      return await tryModel(model);
+    } catch (err) {
+      const isRetryable = err.message.includes('429') || err.message.includes('400');
+      if (!isRetryable) throw err;
+    }
+  }
+
+  // Фаза 2: все модели отказали — циклический перебор с задержкой 3с
+  for (let round = 0; round < 10; round++) {
+    for (const model of models) {
+      await new Promise(r => setTimeout(r, 3000));
       try {
-        const response = await fetch(OPENROUTER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${APP_CONFIG.openrouter.apiKey}`,
-            'HTTP-Referer': window.location.origin,
-          },
-          body: JSON.stringify({
-            model: models[modelIdx],
-            messages,
-          }),
-        });
-
-        if (!response.ok) {
-          let err = 'Unknown error';
-          try { err = await response.text(); } catch(e) {}
-
-          // 429 rate limit — повтор с увеличением задержки
-          if (response.status === 429 && attempt < retries) {
-            const delay = delays[Math.min(attempt, delays.length - 1)];
-            await new Promise(r => setTimeout(r, delay));
-            continue;
-          }
-
-          // 400 invalid model — пробуем следующую модель
-          if (response.status === 400 && modelIdx < models.length - 1) {
-            break;
-          }
-
-          throw new Error(`Ошибка OpenRouter (${response.status}): ${err}`);
-        }
-
-        const data = await response.json();
-        if (!data.choices || !data.choices.length) {
-          throw new Error('OpenRouter вернул пустой ответ');
-        }
-        return data.choices[0].message.content;
+        return await tryModel(model);
       } catch (err) {
         const isRetryable = err.message.includes('429') || err.message.includes('400');
-        if (attempt < retries && isRetryable) {
-          const delay = delays[Math.min(attempt, delays.length - 1)];
-          await new Promise(r => setTimeout(r, delay));
-          continue;
-        }
-        // Если ошибка модели и есть ещё запасные — пробуем следующую
-        if (isRetryable && modelIdx < models.length - 1) {
-          break;
-        }
-        throw err;
+        if (!isRetryable) throw err;
       }
     }
   }
