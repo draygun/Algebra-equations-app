@@ -1,5 +1,27 @@
 ﻿// pages/profile.js — страница профиля и прогресса
 
+function donutGradient(value, total, colorA, colorB) {
+  const pct = total > 0 ? value / total : 0;
+  const angle = pct * 360;
+  if (pct <= 0) return `${colorB} 360deg`;
+  if (pct >= 1) return `${colorA} 360deg`;
+  return `${colorA} 0deg ${angle}deg, ${colorB} ${angle}deg 360deg`;
+}
+
+function statsDonut(value, total, label, colorA, colorB, innerLabel) {
+  const pct = total > 0 ? Math.round(value / total * 100) : 0;
+  return `
+    <div class="stats-donut-card">
+      <div class="stats-donut" style="background: conic-gradient(${donutGradient(value, total, colorA, colorB)})">
+        <div class="stats-donut-hole">
+          <span class="stats-donut-value">${innerLabel || pct + '%'}</span>
+        </div>
+      </div>
+      <div class="stats-donut-label">${label}</div>
+    </div>
+  `;
+}
+
 async function renderProfilePage(app, params, hash) {
   app.className = 'page page-profile';
 
@@ -17,7 +39,7 @@ async function renderProfilePage(app, params, hash) {
   app.innerHTML = '<div class="loading">Загрузка прогресса...</div>';
 
   try {
-    const progress = await getAllProgress();
+    const [progress, wordleStats] = await Promise.all([getAllProgress(), getWordleStats()]);
     const equations = EQUATIONS_DATA;
 
     const getEqName = (id) => {
@@ -32,46 +54,117 @@ async function renderProfilePage(app, params, hash) {
       </div>
     `;
 
-    if (progress.length === 0) {
-      html += `
-        <div class="profile-empty">
-          <p>У вас пока нет решённых задач.</p>
-          <button onclick="router.navigate('/home')" class="btn btn-primary">Начать практику</button>
-        </div>
-      `;
-    } else {
+    // ─── Equation Stats ─────────────────────────────────
+    if (progress.length > 0) {
       const totalAttempts = progress.reduce((s, p) => s + p.attempts, 0);
       const totalCorrect = progress.reduce((s, p) => s + p.correct, 0);
+      const totalWrong = totalAttempts - totalCorrect;
       const totalFirstAttempt = progress.reduce((s, p) => s + (p.solvedOnFirstAttempt || 0), 0);
       const percent = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
 
       html += `
-        <div class="stats-summary">
-          <div class="stat-card">
-            <div class="stat-value">${totalAttempts}</div>
-            <div class="stat-label">Всего попыток</div>
+        <div class="profile-section">
+          <div class="profile-section-header">
+            <span class="profile-section-icon">📐</span>
+            <h3>Решение уравнений</h3>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">${totalCorrect}</div>
-            <div class="stat-label">Решено задач</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${percent}%</div>
-            <div class="stat-label">Успешность</div>
+          <div class="stats-grid">
+            ${statsDonut(totalCorrect, totalAttempts, 'Решено задач', '#6aaa64', '#e17055', percent + '%')}
+            <div class="stats-mini-grid">
+              <div class="stat-card-mini">
+                <span class="stat-card-mini-value">${totalAttempts}</span>
+                <span class="stat-card-mini-label">Всего попыток</span>
+              </div>
+              <div class="stat-card-mini">
+                <span class="stat-card-mini-value">${totalCorrect}</span>
+                <span class="stat-card-mini-label">Решено верно</span>
+              </div>
+              <div class="stat-card-mini">
+                <span class="stat-card-mini-value">${totalWrong}</span>
+                <span class="stat-card-mini-label">Ошибок</span>
+              </div>
+              <div class="stat-card-mini">
+                <span class="stat-card-mini-value">${totalFirstAttempt}</span>
+                <span class="stat-card-mini-label">С 1-й попытки</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stats-summary" style="grid-template-columns: 1fr 1fr; margin-top: -16px;">
-          <div class="stat-card">
-            <div class="stat-value">${totalFirstAttempt}</div>
-            <div class="stat-label">С первой попытки</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${totalCorrect - totalFirstAttempt}</div>
-            <div class="stat-label">Со второй попытки</div>
+      `;
+    }
+
+    // ─── Wordle Stats ───────────────────────────────────
+    html += `
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <span class="profile-section-icon">🎯</span>
+          <h3>Wordle — угадай слово</h3>
+        </div>
+    `;
+
+    if (wordleStats && wordleStats.gamesPlayed > 0) {
+      const played = wordleStats.gamesPlayed || 0;
+      const wins = wordleStats.wins || 0;
+      const losses = played - wins;
+      const winRate = played > 0 ? Math.round(wins / played * 100) : 0;
+      const streak = wordleStats.currentStreak || 0;
+      const maxStreak = wordleStats.maxStreak || 0;
+
+      html += `
+        <div class="stats-grid">
+          ${statsDonut(wins, played, 'Побед', '#6aaa64', '#787c7e', winRate + '%')}
+          <div class="stats-mini-grid">
+            <div class="stat-card-mini">
+              <span class="stat-card-mini-value">${played}</span>
+              <span class="stat-card-mini-label">Всего игр</span>
+            </div>
+            <div class="stat-card-mini">
+              <span class="stat-card-mini-value">${wins}</span>
+              <span class="stat-card-mini-label">Побед</span>
+            </div>
+            <div class="stat-card-mini">
+              <span class="stat-card-mini-value">${losses}</span>
+              <span class="stat-card-mini-label">Поражений</span>
+            </div>
+            <div class="stat-card-mini">
+              <span class="stat-card-mini-value">${winRate}%</span>
+              <span class="stat-card-mini-label">Процент побед</span>
+            </div>
           </div>
         </div>
-        <h3>Прогресс по типам уравнений</h3>
-        <div class="progress-list">
+        <div class="streak-grid">
+          <div class="streak-card streak-card-current">
+            <div class="streak-fire">🔥</div>
+            <div class="streak-value">${streak}</div>
+            <div class="streak-label">Текущая серия</div>
+          </div>
+          <div class="streak-card streak-card-max">
+            <div class="streak-fire">🏆</div>
+            <div class="streak-value">${maxStreak}</div>
+            <div class="streak-label">Лучшая серия</div>
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="profile-empty" style="padding:20px">
+          <p>Вы ещё не играли в Wordle.</p>
+          <button onclick="router.navigate('/wordle')" class="btn btn-primary btn-sm">Играть</button>
+        </div>
+      `;
+    }
+
+    html += '</div>';
+
+    // ─── Progress by equation type ──────────────────────
+    if (progress.length > 0) {
+      html += `
+        <div class="profile-section">
+          <div class="profile-section-header">
+            <span class="profile-section-icon">📊</span>
+            <h3>Прогресс по типам уравнений</h3>
+          </div>
+          <div class="progress-list">
       `;
 
       progress.forEach(p => {
@@ -89,7 +182,7 @@ async function renderProfilePage(app, params, hash) {
         `;
       });
 
-      html += '</div>';
+      html += '</div></div>';
     }
 
     app.innerHTML = html;
