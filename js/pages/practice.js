@@ -96,7 +96,7 @@ function showMascot(phrase, type) {
   mascot.innerHTML = `
     <div class="mascot-speech ${type || ''}">${phrase}</div>
     <div class="mascot-character">
-      <img class="mascot-svg" src="data/character.svg" alt="Помощник">
+      <img class="mascot-img" src="data/character.png" alt="Помощник">
     </div>
   `;
   setTimeout(() => {
@@ -131,7 +131,6 @@ async function generateNewEquation(skipMascot) {
     content.innerHTML = `
       <div class="practice-equation">
         <div class="equation-display">${data.equation}</div>
-        <div class="difficulty-badge ${data.difficulty}">${data.difficulty}</div>
       </div>
 
       <div class="practice-input-area">

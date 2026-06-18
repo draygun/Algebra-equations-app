@@ -524,10 +524,12 @@ body.loading .app-content { display: none; }
   flex-shrink: 0;
 }
 
-.mascot-svg {
+.mascot-img {
   width: 48px;
   height: 48px;
   display: block;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 @keyframes mascot-bounce {
@@ -594,12 +596,24 @@ body.loading .app-content { display: none; }
   border-top-color: var(--card-bg);
 }
 
-/* Персонаж на главной */
-.home-mascot {
+/* Главная страница с персонажем справа */
+.home-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.home-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Персонаж на странице теории (внизу) */
+.theory-mascot {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  margin: 48px 0 24px;
+  margin: 32px 0 0;
   padding: 20px 24px;
   background: var(--card-bg);
   border-radius: var(--radius);
@@ -608,7 +622,7 @@ body.loading .app-content { display: none; }
   max-width: 600px;
 }
 
-.home-mascot .mascot-speech {
+.theory-mascot .mascot-speech {
   background: transparent;
   border: none;
   box-shadow: none;
@@ -622,16 +636,17 @@ body.loading .app-content { display: none; }
   order: 1;
 }
 
-.home-mascot .mascot-speech::after {
+.theory-mascot .mascot-speech::after {
   display: none;
 }
 
-.home-mascot .mascot-character {
+.theory-mascot .mascot-character {
   order: 0;
 }
 
 @media (max-width: 900px) {
-  .practice-wrapper {
+  .practice-wrapper,
+  .home-wrapper {
     flex-direction: column;
   }
 
@@ -676,12 +691,14 @@ body.loading .app-content { display: none; }
   .app-content { padding: 16px 16px; }
   .theory-actions { flex-direction: column; }
   .theory-actions .btn { justify-content: center; }
-  .home-mascot { max-width: 100%; flex-direction: row; padding: 16px; }
+  .home-content { max-width: 100%; }
+  .theory-mascot { max-width: 100%; flex-direction: row; padding: 16px; }
 }
 
 @media (max-width: 480px) {
   .eq-grid { grid-template-columns: 1fr; }
   h1 { font-size: 1.5em; }
   .equation-display { font-size: 1.2em; }
-  .home-mascot { flex-direction: column; align-items: center; text-align: center; }
+  .home-wrapper .mascot { flex-direction: column; align-items: center; text-align: center; }
+  .theory-mascot { flex-direction: column; align-items: center; text-align: center; }
 }

@@ -59,10 +59,10 @@ function renderTheoryPage(app, params, hash) {
     ];
 
     html += `
-      <div class="home-mascot">
+      <div class="theory-mascot">
         <div class="mascot-speech info">${mascotPhrases[Math.floor(Math.random() * mascotPhrases.length)]}</div>
         <div class="mascot-character">
-          <img class="mascot-svg" src="data/character.svg" alt="Помощник">
+          <img class="mascot-img" src="data/character.png" alt="Помощник">
         </div>
       </div>
     `;

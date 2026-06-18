@@ -27,7 +27,9 @@ function renderHomePage(app, params, hash) {
       9: '9 класс',
     };
 
-    let html = '<h1>Выберите тип уравнения</h1>';
+    let html = '<div class="home-wrapper">';
+    html += '<div class="home-content">';
+    html += '<h1>Выберите тип уравнения</h1>';
     html += '<p class="subtitle">Изучите теорию и потренируйтесь решать уравнения с помощью ИИ</p>';
 
     for (const cls of [7, 8, 9]) {
@@ -47,14 +49,18 @@ function renderHomePage(app, params, hash) {
       html += '</div>';
     }
 
+    html += '</div>';
+
     html += `
-      <div class="home-mascot">
+      <div class="mascot mascot-visible">
         <div class="mascot-speech info">${HOME_MASCOT_PHRASES[Math.floor(Math.random() * HOME_MASCOT_PHRASES.length)]}</div>
         <div class="mascot-character">
-          <img class="mascot-svg" src="data/character.svg" alt="Помощник">
+          <img class="mascot-img" src="data/character.png" alt="Помощник">
         </div>
       </div>
     `;
+
+    html += '</div>';
 
     app.innerHTML = html;
   } catch (err) {
