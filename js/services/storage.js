@@ -45,6 +45,19 @@ async function getProgress(eqTypeId) {
   }
 }
 
+async function getWordleStats() {
+  if (!firestore || !window.currentUser) return null;
+  try {
+    const userId = window.currentUser.uid;
+    const ref = firestore.collection('users').doc(userId).collection('wordle').doc('stats');
+    const doc = await ref.get();
+    return doc.exists ? doc.data() : null;
+  } catch (e) {
+    console.warn('Failed to get wordle stats:', e);
+    return null;
+  }
+}
+
 async function getAllProgress() {
   if (!firestore || !window.currentUser) return [];
   try {
