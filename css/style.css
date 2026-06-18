@@ -33,7 +33,6 @@ body.loading .app-content { display: none; }
 .navbar {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
-  padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -47,7 +46,7 @@ body.loading .app-content { display: none; }
   align-items: center;
   height: 60px;
   gap: 8px;
-  padding-left: 32px;
+  padding: 0 48px;
 }
 
 .navbar-brand {
@@ -74,7 +73,7 @@ body.loading .app-content { display: none; }
 .app-content {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 24px 32px 32px;
+  padding: 32px 48px;
 }
 
 .page h1 {
@@ -511,17 +510,62 @@ body.loading .app-content { display: none; }
 }
 
 .mascot-character {
-  font-size: 3em;
   width: 64px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-light);
+  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
   border-radius: 50%;
   box-shadow: var(--shadow);
   animation: mascot-bounce 3s ease-in-out infinite;
   flex-shrink: 0;
+  position: relative;
+}
+
+.mascot-character .paperclip-body {
+  font-size: 1.8em;
+  position: relative;
+  line-height: 1;
+}
+
+.mascot-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.mascot-face .eye {
+  position: absolute;
+  width: 5px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  top: 18px;
+}
+
+.mascot-face .eye.left { left: 17px; }
+.mascot-face .eye.right { right: 17px; }
+
+.mascot-face .smile {
+  position: absolute;
+  width: 10px;
+  height: 5px;
+  border: 2px solid white;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  bottom: 15px;
+  left: 50%;
+  margin-left: -5px;
+  background: transparent;
+}
+
+.mascot-character .paperclip-body,
+.mascot-face {
+  transition: none;
 }
 
 @keyframes mascot-bounce {
@@ -588,6 +632,42 @@ body.loading .app-content { display: none; }
   border-top-color: var(--card-bg);
 }
 
+/* Персонаж на главной */
+.home-mascot {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 48px 0 24px;
+  padding: 20px 24px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  max-width: 600px;
+}
+
+.home-mascot .mascot-speech {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  transform: none;
+  opacity: 1;
+  font-size: 1em;
+  line-height: 1.6;
+  flex: 1;
+  order: 1;
+}
+
+.home-mascot .mascot-speech::after {
+  display: none;
+}
+
+.home-mascot .mascot-character {
+  order: 0;
+}
+
 @media (max-width: 900px) {
   .practice-wrapper {
     flex-direction: column;
@@ -629,10 +709,9 @@ body.loading .app-content { display: none; }
   .eq-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .stats-summary { grid-template-columns: 1fr; }
   .practice-buttons { flex-direction: column; }
-  .navbar { padding: 0 12px; }
-  .navbar-inner { padding-left: 16px; }
+  .navbar-inner { padding: 0 16px; }
   .nav-link { padding: 6px 10px; font-size: 0.8em; }
-  .app-content { padding: 16px 12px 16px 16px; }
+  .app-content { padding: 16px 16px; }
   .theory-actions { flex-direction: column; }
   .theory-actions .btn { justify-content: center; }
 }

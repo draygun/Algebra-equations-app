@@ -1,5 +1,14 @@
 ﻿// pages/home.js — главная страница с выбором типа уравнения
 
+const HOME_MASCOT_PHRASES = [
+  'Привет! Выбери тип уравнения и начнём! 📚',
+  'Готов решать уравнения? Давай начнём! 🚀',
+  'Алгебра — это интересно! Выбирай тему! ⭐',
+  'Я помогу тебе разобраться с любым уравнением! 💪',
+  'Не бойся сложных задач — вместе решим! 🤝',
+  'Каждая решённая задача делает тебя умнее! 🧠',
+];
+
 function renderHomePage(app, params, hash) {
   app.className = 'page page-home';
 
@@ -37,6 +46,20 @@ function renderHomePage(app, params, hash) {
       });
       html += '</div>';
     }
+
+    html += `
+      <div class="home-mascot">
+        <div class="mascot-speech info">${HOME_MASCOT_PHRASES[Math.floor(Math.random() * HOME_MASCOT_PHRASES.length)]}</div>
+        <div class="mascot-character">
+          <span class="paperclip-body">📎</span>
+          <span class="mascot-face">
+            <span class="eye left"></span>
+            <span class="eye right"></span>
+            <span class="smile"></span>
+          </span>
+        </div>
+      </div>
+    `;
 
     app.innerHTML = html;
   } catch (err) {

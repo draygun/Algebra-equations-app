@@ -95,7 +95,14 @@ function showMascot(phrase, type) {
   mascot.className = 'mascot mascot-visible';
   mascot.innerHTML = `
     <div class="mascot-speech ${type || ''}">${phrase}</div>
-    <div class="mascot-character">🧠</div>
+    <div class="mascot-character">
+      <span class="paperclip-body">📎</span>
+      <span class="mascot-face">
+        <span class="eye left"></span>
+        <span class="eye right"></span>
+        <span class="smile"></span>
+      </span>
+    </div>
   `;
   setTimeout(() => {
     const speech = mascot.querySelector('.mascot-speech');
@@ -155,8 +162,9 @@ async function generateNewEquation(skipMascot) {
       showMascot(getRandomPhrase('newEquation'), 'info');
     }
   } catch (err) {
+    const isRateLimit = err.message.includes('429');
     content.innerHTML = `
-      <div class="error-msg">Ошибка генерации: ${err.message}</div>
+      <div class="error-msg">${isRateLimit ? 'Сервер временно перегружен. Пожалуйста, подожди и попробуй снова.' : 'Ошибка генерации: ' + err.message}</div>
       <button onclick="generateNewEquation()" class="btn btn-primary" style="margin-top:12px">Попробовать снова</button>
     `;
   }
@@ -216,7 +224,8 @@ async function submitAnswer() {
       showMascot(getRandomPhrase('wrong'), 'error');
     }
   } catch (err) {
-    resultDiv.innerHTML = `<div class="msg msg-error">Ошибка проверки: ${err.message}</div>`;
+    const isRateLimit = err.message.includes('429');
+    resultDiv.innerHTML = `<div class="msg msg-error">${isRateLimit ? 'Сервер временно перегружен. Пожалуйста, подожди и попробуй снова.' : 'Ошибка проверки: ' + err.message}</div>`;
   }
 }
 
@@ -248,6 +257,7 @@ async function getHintAction() {
       </div>
     `;
   } catch (err) {
-    hintDiv.innerHTML = `<div class="msg msg-error">Ошибка: ${err.message}</div>`;
+    const isRateLimit = err.message.includes('429');
+    hintDiv.innerHTML = `<div class="msg msg-error">${isRateLimit ? 'Сервер временно перегружен. Пожалуйста, подожди и попробуй снова.' : 'Ошибка: ' + err.message}</div>`;
   }
 }
