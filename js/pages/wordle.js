@@ -1,4 +1,4 @@
-// pages/wordle.js — Wordle с математическими терминами
+// pages/wordle.js — Вордли с математическими терминами
 
 const WORDLE_MASCOT_PHRASES = {
   win: [
@@ -71,7 +71,7 @@ function renderWordlePage(app, params, hash) {
     <div class="wordle-wrapper">
       <div class="wordle-container">
         <div class="wordle-header">
-          <h1>${isDaily ? 'Ежедневное слово' : 'Wordle'}</h1>
+          <h1>${isDaily ? 'Ежедневное слово' : 'Вордли'}</h1>
           <p class="wordle-subtitle">Угадай математический термин</p>
         </div>
         <div id="wordle-hints"></div>
@@ -113,12 +113,12 @@ function hashSeed(seed) {
 function pickWordleWord(isDaily) {
   if (isDaily) {
     const seed = getDailySeed();
-    const idx = hashSeed(seed) % WORDLE_WORDS.length;
-    wordleState.targetObj = WORDLE_WORDS[idx];
+    const idx = hashSeed(seed) % WORDLE_TARGETS.length;
+    wordleState.targetObj = WORDLE_TARGETS[idx];
   } else {
-    wordleState.targetObj = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+    wordleState.targetObj = WORDLE_TARGETS[Math.floor(Math.random() * WORDLE_TARGETS.length)];
   }
-  wordleState.targetWord = wordleState.targetObj.word;
+  wordleState.targetWord = wordleState.targetObj;
   wordleState.wordLength = wordleState.targetObj.length;
 }
 
@@ -300,7 +300,7 @@ function submitWordleGuess() {
     return;
   }
 
-  if (!WORDLE_WORDS.some(w => w.word === guess)) {
+  if (!WORDLE_POOL.includes(guess)) {
     showWordleMessage('Такого слова нет в списке');
     return;
   }

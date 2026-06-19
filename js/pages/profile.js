@@ -98,7 +98,7 @@ async function renderProfilePage(app, params, hash) {
       <div class="profile-section">
         <div class="profile-section-header">
           <span class="profile-section-icon">🎯</span>
-          <h3>Wordle — угадай слово</h3>
+          <h3>Вордли — угадай слово</h3>
         </div>
     `;
 
@@ -148,7 +148,7 @@ async function renderProfilePage(app, params, hash) {
     } else {
       html += `
         <div class="profile-empty" style="padding:20px">
-          <p>Вы ещё не играли в Wordle.</p>
+          <p>Вы ещё не играли в Вордли.</p>
           <button onclick="router.navigate('/wordle')" class="btn btn-primary btn-sm">Играть</button>
         </div>
       `;
