@@ -103,13 +103,22 @@ async function handleAuth(e) {
 
 async function googleSignIn() {
   if (!firebaseAuth) return;
+  const errorEl = document.getElementById('auth-error');
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     await firebaseAuth.signInWithPopup(provider);
     router.navigate('/home');
   } catch (err) {
-    const errorEl = document.getElementById('auth-error');
-    if (errorEl) errorEl.textContent = getAuthErrorMessage(err.code);
+    const msg = getAuthErrorMessage(err.code);
+    if (errorEl) errorEl.textContent = msg;
+    // Если popup заблокирован — пробуем редирект
+    if (err.code === 'auth/popup-blocked') {
+      try {
+        await firebaseAuth.signInWithRedirect(provider);
+      } catch (e2) {
+        if (errorEl) errorEl.textContent = 'Редирект тоже не сработал. Разрешите всплывающие окна для этого сайта.';
+      }
+    }
   }
 }
 
@@ -127,6 +136,10 @@ function getAuthErrorMessage(code) {
     'auth/weak-password': 'Пароль должен быть не менее 6 символов',
     'auth/invalid-email': 'Некорректный email',
     'auth/popup-closed-by-user': 'Вход отменён',
+    'auth/popup-blocked': 'Всплывающее окно заблокировано. Разрешите всплывающие окна для этого сайта.',
+    'auth/unauthorized-domain': 'Домен не авторизован в Firebase. Добавьте этот домен в консоли Firebase.',
+    'auth/operation-not-allowed': 'Вход через Google не включён в консоли Firebase.',
+    'auth/network-request-failed': 'Ошибка сети. Проверьте подключение к интернету.',
   };
   return messages[code] || 'Ошибка авторизации. Попробуйте снова.';
 }

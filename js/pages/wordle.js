@@ -279,6 +279,8 @@ function handleWordleKey(key) {
 }
 
 function handleWordlePhysicalKey(e) {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   const key = e.key.toUpperCase();
   if (key === 'ENTER') {
     e.preventDefault();
