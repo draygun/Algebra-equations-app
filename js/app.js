@@ -1,6 +1,6 @@
 ﻿// app.js — главный файл, инициализация роутера
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Регистрируем маршруты
   router.add('/home', renderHomePage);
   router.add('/auth', renderAuthPage);
@@ -10,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
   router.add('/wordle', renderWordlePage);
   router.add('/wordle/daily', renderWordlePage);
   router.add('/profile', renderProfilePage);
+
+  // Ждём, пока Firebase подтвердит статус авторизации
+  if (typeof firebaseReady !== 'undefined') {
+    await firebaseReady;
+  }
 
   // Показываем навигацию и разрешаем текущий URL
   document.body.classList.remove('loading');

@@ -24,20 +24,26 @@ function initFirebase() {
 
 let firebaseAuth = null;
 let firestore = null;
+let firebaseReady = null;
 
 const fb = initFirebase();
 if (fb) {
   firebaseAuth = fb.auth;
   firestore = fb.db;
 
-  firebaseAuth.onAuthStateChanged(user => {
-    window.currentUser = user;
-    updateAuthUI(user);
-    const hash = window.location.hash.slice(1);
-    if (user && hash === '/auth') {
-      router.navigate('/home');
-    }
+  firebaseReady = new Promise(resolve => {
+    firebaseAuth.onAuthStateChanged(user => {
+      window.currentUser = user;
+      updateAuthUI(user);
+      const hash = window.location.hash.slice(1);
+      if (user && hash === '/auth') {
+        router.navigate('/home');
+      }
+      resolve();
+    });
   });
+} else {
+  firebaseReady = Promise.resolve();
 }
 
 function updateAuthUI(user) {
