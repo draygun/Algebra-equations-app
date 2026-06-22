@@ -3,7 +3,7 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 const FALLBACK_MODELS = [
-  'nex-agi/nex-n2-pro:free',
+  'cohere/north-mini-code:free',
   'openrouter/owl-alpha',
   'poolside/laguna-m.1:free',
 ];
@@ -46,7 +46,8 @@ async function callOpenRouter(messages) {
       return await tryModel(model);
     } catch (err) {
       const isRetryable = err.message.includes('429') || err.message.includes('400');
-      if (!isRetryable) throw err;
+      const isModelDead = err.message.includes('404') || err.message.includes('unavailable') || err.message.includes('not available');
+      if (!isRetryable && !isModelDead) throw err;
     }
   }
 
